@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hardlife Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F3EF;
+    --card:#FFFFFF;
+    --ink:#1E1E1C;
+    --ink-soft:#54524A;
+    --muted:#8A8778;
+    --line:#E1DED3;
+    --line-strong:#CFCBBE;
+    --brand:#E8961F;
+    --danger:#E24B4A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:1400px;margin:0 auto;padding:1.6rem 1.6rem 4rem;}
+
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:1.2rem;flex-wrap:wrap;gap:12px;
+  }
+  .brand-block{display:flex;align-items:center;gap:12px;cursor:pointer;}
+  .brand-mark{
+    width:36px;height:36px;border-radius:8px;
+    background:var(--ink);color:var(--brand);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:0.95rem;
+  }
+  .brand-title{font-size:1.15rem;font-weight:600;}
+  .brand-sub{font-size:0.78rem;color:var(--muted);}
+
+  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  input[type="text"].search{
+    border:1px solid var(--line);border-radius:8px;
+    padding:8px 12px;font-size:0.85rem;width:220px;
+    background:var(--card);color:var(--ink);
+  }
+  button{font-family:'Inter',sans-serif;}
+  .btn{
+    border:1px solid var(--line);background:var(--card);color:var(--ink);
+    border-radius:8px;padding:8px 14px;font-size:0.85rem;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .btn:hover{border-color:var(--line-strong);background:#FAF9F5;}
+  .btn.primary{background:var(--ink);color:var(--brand);border-color:var(--ink);}
+  .btn.primary:hover{background:#333;}
+  .btn.ghost{border-color:transparent;background:transparent;padding:8px 4px;}
+
+  .stat-row{display:flex;gap:14px;margin-bottom:1.2rem;flex-wrap:wrap;}
+  .stat-card{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:14px 18px;min-width:120px;
+  }
+  .stat-card .num{font-size:1.5rem;font-weight:600;}
+  .stat-card .lbl{font-size:0.76rem;color:var(--muted);margin-top:2px;}
+
+  .legend{
+    display:flex;gap:16px;flex-wrap:wrap;margin-bottom:1rem;
+    font-size:0.78rem;color:var(--ink-soft);
+  }
+  .legend .chip{display:flex;align-items:center;gap:6px;}
+  .legend .dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
+
+  .back-link{
+    display:inline-flex;align-items:center;gap:6px;color:var(--ink-soft);
+    font-size:0.85rem;cursor:pointer;margin-bottom:14px;
+  }
+  .back-link:hover{color:var(--ink);}
+  .cat-page-header{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:1rem;flex-wrap:wrap;gap:10px;
+  }
+  .cat-page-title{display:flex;align-items:center;gap:12px;}
+  .cat-page-title .swatch{width:14px;height:14px;border-radius:4px;}
+  .cat-page-title h2{margin:0;font-size:1.25rem;font-weight:600;}
+
+  .timeline-scroll{
+    overflow-x:auto;overflow-y:visible;
+    border:1px solid var(--line);border-radius:12px;
+    background:var(--card);position:relative;
+  }
+  .header-block{position:sticky;top:0;z-index:5;background:var(--card);}
+  .quarter-row, .month-row{display:flex;min-width:max-content;}
+  .quarter-row{border-bottom:1px solid var(--line);}
+  .month-row{border-bottom:1px solid var(--line);}
+  .corner-cell{
+    width:240px;flex:0 0 240px;position:sticky;left:0;z-index:6;
+    background:var(--card);border-right:1px solid var(--line);
+    display:flex;align-items:center;padding:0 12px;
+    font-size:0.75rem;font-weight:600;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:0.04em;height:28px;
+  }
+  .corner-cell.tall{height:32px;}
+  .quarter-cell{
+    text-align:center;font-size:0.68rem;font-weight:600;color:var(--ink-soft);
+    padding:6px 0;border-right:1px solid var(--line);background:#F7F5EF;
+    height:28px;display:flex;align-items:center;justify-content:center;
+  }
+  .quarter-cell:nth-child(odd){background:#EFECE1;}
+  .month-cell{
+    width:64px;flex:0 0 64px;text-align:center;
+    font-size:0.7rem;color:var(--muted);padding:8px 0;
+    border-right:1px solid var(--line);height:32px;
+  }
+  .month-cell.today{background:var(--brand);color:#fff;font-weight:600;}
+
+  .row{
+    display:flex;position:relative;min-width:max-content;
+    border-bottom:1px solid var(--line);cursor:pointer;
+  }
+  .row:hover{background:#FBF8F1;}
+  .row:hover .name-cell{background:#FBF8F1;}
+  .name-cell{
+    width:240px;flex:0 0 240px;position:sticky;left:0;z-index:2;
+    background:var(--card);border-right:1px solid var(--line);
+    padding:10px 12px;font-size:0.83rem;
+    display:flex;flex-direction:column;gap:2px;justify-content:center;
+  }
+  .name-cell .pname{font-weight:500;}
+  .name-cell .psub{font-size:0.72rem;color:var(--muted);}
+  .name-cell .edit-btn{
+    position:absolute;right:8px;top:8px;font-size:0.68rem;color:var(--muted);
+    border:1px solid var(--line);background:var(--card);border-radius:5px;
+    padding:2px 6px;cursor:pointer;
+  }
+  .name-cell .edit-btn:hover{color:var(--ink);border-color:var(--line-strong);}
+  .cells{display:flex;}
+  .cells .month-cell{border-right:1px solid var(--line);height:100%;padding:0;background:transparent;}
+  .bar{
+    position:absolute;top:8px;height:calc(100% - 16px);
+    border-radius:6px;display:flex;align-items:center;padding:0 8px;
+    font-size:0.72rem;font-weight:500;overflow:hidden;white-space:nowrap;
+    pointer-events:none;
+  }
+  .empty-msg{padding:2.5rem;text-align:center;color:var(--muted);font-size:0.9rem;}
+  .add-row-link{padding:12px;font-size:0.85rem;color:var(--ink-soft);cursor:pointer;min-width:max-content;}
+  .add-row-link:hover{color:var(--ink);}
+
+  .overlay{
+    position:fixed;inset:0;background:rgba(30,28,25,0.45);
+    display:flex;align-items:center;justify-content:center;z-index:50;
+    padding:20px;
+  }
+  .hidden{display:none;}
+  .modal{
+    background:var(--card);border-radius:14px;padding:1.6rem 1.7rem;
+    width:100%;max-width:440px;max-height:90vh;overflow-y:auto;
+  }
+  .modal h3{margin:0 0 1.1rem;font-size:1.05rem;font-weight:600;}
+  .field{margin-bottom:0.9rem;}
+  .field label{
+    display:block;font-size:0.76rem;color:var(--muted);
+    text-transform:uppercase;letter-spacing:0.03em;margin-bottom:5px;
+  }
+  .field input[type="text"], .field select, .field textarea{
+    width:100%;border:1px solid var(--line);border-radius:8px;
+    padding:8px 10px;font-size:0.88rem;font-family:'Inter',sans-serif;
+    color:var(--ink);background:#FCFBF8;
+  }
+  .field textarea{min-height:70px;resize:vertical;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .modal-actions{display:flex;justify-content:space-between;margin-top:1.2rem;gap:10px;}
+  .modal-actions .right{display:flex;gap:8px;}
+  .status-preview{
+    display:inline-flex;align-items:center;gap:6px;font-size:0.78rem;
+    margin-top:6px;padding:3px 8px;border-radius:6px;font-weight:500;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand-block" id="brandHome">
+      <div class="brand-mark">HL</div>
+      <div>
+        <div class="brand-title">Hardlife Planner</div>
+        <div class="brand-sub" id="brandSub">36-month project overview</div>
+      </div>
+    </div>
+    <div class="controls" id="topControls"></div>
+  </div>
+
+  <div id="pageContent"></div>
+</div>
+
+<div class="overlay hidden" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">Add project</h3>
+    <div class="field">
+      <label>Project name</label>
+      <input type="text" id="f_name" placeholder="e.g. Conclude Q3 auctions">
+    </div>
+    <div class="field">
+      <label>Category</label>
+      <select id="f_dept"></select>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Owner</label>
+        <input type="text" id="f_owner" placeholder="Name">
+      </div>
+      <div class="field">
+        <label>Priority</label>
+        <select id="f_priority">
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Status</label>
+      <select id="f_status"></select>
+      <div class="status-preview" id="statusPreview"></div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Start month</label>
+        <select id="f_start"></select>
+      </div>
+      <div class="field">
+        <label>End month</label>
+        <select id="f_end"></select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="f_notes" placeholder="Any detail worth keeping"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="deleteBtn" style="display:none;color:var(--danger);border-color:var(--danger);">Delete</button>
+      <div class="right">
+        <button class="btn" id="cancelBtn">Cancel</button>
+        <button class="btn primary" id="saveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--
+  ============================================================
+  STEP: paste your Firebase config into firebaseConfig below.
+  You'll get this from the Firebase console when you register
+  a web app (the "</> Web" icon in Project settings).
+  Nothing else on this page needs to change.
+  ============================================================
+-->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBWrcUUfbeK-tCAB2Ru3_n_HRmH7TQlK8Q",
+    authDomain: "hardlife-planner-344b0.firebaseapp.com",
+    projectId: "hardlife-planner-344b0",
+    storageBucket: "hardlife-planner-344b0.firebasestorage.app",
+    messagingSenderId: "633110554402",
+    appId: "1:633110554402:web:34c11885ba6dd35009677b"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
+<script>
+const NAME_W = 240, MONTH_W = 64, MONTH_COUNT = 36;
+const START_YEAR = 2026, START_MONTH = 6; // July 2026, 0-indexed
+
+const STATUS = {
+  not_started: {label:'Not started', bg:'#B4B2A9', text:'#2C2C2A'},
+  in_progress: {label:'In progress', bg:'#EF9F27', text:'#412402'},
+  completed:   {label:'Completed',   bg:'#97C459', text:'#173404'},
+  cancelled:   {label:'Cancelled',   bg:'#8A6A63', text:'#FBEDEA'}
+};
+
+const DEFAULT_DEPTS = [
+  {id:'admin',     name:'Admin',           color:'#E8961F'},
+  {id:'workshop',  name:'Workshop',        color:'#6B9B4F'},
+  {id:'warehouse', name:'Warehouse',       color:'#3B7FC4'},
+  {id:'auction',   name:'Auction',         color:'#9C8FC9'},
+  {id:'purchase',  name:'Purchase Orders', color:'#D97E7E'},
+  {id:'financials',name:'Financials',      color:'#A69B6E'}
+];
+
+let months = [];
+for(let i=0;i<MONTH_COUNT;i++){
+  const d = new Date(START_YEAR, START_MONTH + i, 1);
+  months.push({
+    label: d.toLocaleDateString('en-GB',{month:'short'}),
+    year: d.getFullYear(), month: d.getMonth(),
+    quarter: Math.floor(d.getMonth()/3) + 1
+  });
+}
+const now = new Date();
+const todayIdx = months.findIndex(m => m.year === now.getFullYear() && m.month === now.getMonth());
+
+function quarterSegments(){
+  const segs = [];
+  months.forEach((m, i) => {
+    const key = m.year + '-Q' + m.quarter;
+    if(segs.length && segs[segs.length-1].key === key){
+      segs[segs.length-1].count++;
+    } else {
+      segs.push({key, label:'Q' + m.quarter + " '" + String(m.year).slice(2), count:1});
+    }
+  });
+  return segs;
+}
+
+let departments = [];
+let projects = [];
+let editingId = null;
+let view = {type:'overview'};
+
+async function loadState(){
+  try{
+    const doc = await db.collection('hardlifePlanner').doc('departments').get();
+    departments = doc.exists ? JSON.parse(doc.data().json) : JSON.parse(JSON.stringify(DEFAULT_DEPTS));
+  }catch(e){ departments = JSON.parse(JSON.stringify(DEFAULT_DEPTS)); }
+  try{
+    const doc = await db.collection('hardlifePlanner').doc('projects').get();
+    projects = doc.exists ? JSON.parse(doc.data().json) : [];
+  }catch(e){ projects = []; }
+  let migrated = false;
+  projects.forEach(p => {
+    if(p.status === 'blocked'){ p.status = 'cancelled'; migrated = true; }
+  });
+  if(migrated) await saveProjects();
+}
+async function saveDepartments(){
+  try{ await db.collection('hardlifePlanner').doc('departments').set({json: JSON.stringify(departments)}); }catch(e){ console.error('Save failed:', e); }
+}
+async function saveProjects(){
+  try{ await db.collection('hardlifePlanner').doc('projects').set({json: JSON.stringify(projects)}); }catch(e){ console.error('Save failed:', e); }
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+function legendHtml(){
+  return `<div class="legend">${Object.values(STATUS).map(s =>
+    `<div class="chip"><span class="dot" style="background:${s.bg}"></span>${s.label}</div>`
+  ).join('')}</div>`;
+}
+
+function monthOptions(selectedIdx){
+  return months.map((m,i) => `<option value="${i}" ${i===selectedIdx?'selected':''}>${m.label} '${String(m.year).slice(2)}</option>`).join('');
+}
+function deptOptions(selectedId){
+  return departments.map(d => `<option value="${d.id}" ${d.id===selectedId?'selected':''}>${d.name}</option>`).join('');
+}
+function statusOptions(selectedKey){
+  return Object.entries(STATUS).map(([k,v]) => `<option value="${k}" ${k===selectedKey?'selected':''}>${v.label}</option>`).join('');
+}
+
+function headerBlockHtml(cornerLabel){
+  const segs = quarterSegments();
+  let qHtml = `<div class="corner-cell">Quarter</div>`;
+  segs.forEach(s => {
+    qHtml += `<div class="quarter-cell" style="flex:0 0 ${s.count*MONTH_W}px;width:${s.count*MONTH_W}px;">${s.label}</div>`;
+  });
+  let mHtml = `<div class="corner-cell tall">${cornerLabel}</div>`;
+  months.forEach((m,i) => {
+    mHtml += `<div class="month-cell ${i===todayIdx?'today':''}">${m.label}</div>`;
+  });
+  return `<div class="header-block">
+    <div class="quarter-row">${qHtml}</div>
+    <div class="month-row">${mHtml}</div>
+  </div>`;
+}
+
+function goHome(){ view = {type:'overview'}; render(); }
+function goCategory(id){ view = {type:'category', id}; render(); }
+
+function render(){
+  document.getElementById('brandSub').textContent = view.type === 'overview'
+    ? '36-month category overview'
+    : (departments.find(d=>d.id===view.id) || {}).name || '';
+  if(view.type === 'overview') renderOverviewPage();
+  else renderCategoryPage(view.id);
+}
+
+function renderOverviewPage(){
+  const total = projects.length;
+  const counts = {not_started:0, in_progress:0, completed:0, cancelled:0};
+  projects.forEach(p => { if(counts[p.status] !== undefined) counts[p.status]++; });
+
+  document.getElementById('topControls').innerHTML = `
+    <button class="btn primary" id="addProjBtn">+ Add project</button>
+  `;
+
+  const titleHtml = `<div class="cat-page-header"><div class="cat-page-title"><h2>Overview</h2></div></div>`;
+
+  const statHtml = titleHtml + `<div class="stat-row">
+    <div class="stat-card"><div class="num">${total}</div><div class="lbl">Total projects</div></div>
+    <div class="stat-card"><div class="num">${counts.in_progress}</div><div class="lbl">In progress</div></div>
+    <div class="stat-card"><div class="num">${counts.completed}</div><div class="lbl">Completed</div></div>
+    <div class="stat-card"><div class="num">${counts.not_started}</div><div class="lbl">Not started</div></div>
+  </div>`;
+
+  const ROW_PAD = 10, LANE_H = 24, LANE_GAP = 4;
+
+  function computeLanes(list){
+    const sorted = [...list].sort((a,b) => a.start - b.start);
+    const laneEnds = [];
+    const lanesById = {};
+    sorted.forEach(p => {
+      let placed = false;
+      for(let i=0;i<laneEnds.length;i++){
+        if(laneEnds[i] < p.start){ lanesById[p.id] = i; laneEnds[i] = p.end; placed = true; break; }
+      }
+      if(!placed){ lanesById[p.id] = laneEnds.length; laneEnds.push(p.end); }
+    });
+    return {lanesById, laneCount: laneEnds.length};
+  }
+
+  let bodyHtml = '';
+  departments.forEach(dept => {
+    const deptProjects = projects.filter(p => p.dept === dept.id);
+    const n = deptProjects.length;
+    let barsHtml = '';
+    let rowHeight = 52;
+    if(n > 0){
+      const {lanesById, laneCount} = computeLanes(deptProjects);
+      rowHeight = Math.max(52, ROW_PAD*2 + laneCount*LANE_H + (laneCount-1)*LANE_GAP);
+      barsHtml = deptProjects.map(p => {
+        const s = STATUS[p.status] || STATUS.not_started;
+        const lane = lanesById[p.id];
+        const top = ROW_PAD + lane*(LANE_H+LANE_GAP);
+        const left = NAME_W + p.start * MONTH_W;
+        const width = (p.end - p.start + 1) * MONTH_W - 4;
+        return `<div class="bar" style="top:${top}px;height:${LANE_H}px;left:${left}px;width:${width}px;background:${s.bg};color:${s.text}">${escapeHtml(p.name)}</div>`;
+      }).join('');
+    }
+    bodyHtml += `<div class="row" data-dept="${dept.id}" style="height:${rowHeight}px;">
+      <div class="name-cell">
+        <span class="pname">${escapeHtml(dept.name)}</span>
+        <span class="psub">${n} project${n===1?'':'s'}</span>
+        <button class="edit-btn" data-action="rename" data-dept="${dept.id}">Rename</button>
+      </div>
+      <div class="cells">${'<div class="month-cell" style="height:100%;"></div>'.repeat(MONTH_COUNT)}</div>
+      ${barsHtml}
+    </div>`;
+  });
+  bodyHtml += `<div class="add-row-link" id="addCatLink">+ Add another category</div>`;
+
+  document.getElementById('pageContent').innerHTML = statHtml + legendHtml() +
+    `<div class="timeline-scroll" id="timelineScroll">
+      ${headerBlockHtml('Category')}
+      <div id="bodyWrap">${bodyHtml}</div>
+    </div>`;
+
+  document.querySelectorAll('.row[data-dept]').forEach(row => {
+    row.addEventListener('click', (e) => {
+      if(e.target.closest('[data-action="rename"]')) return;
+      goCategory(row.dataset.dept);
+    });
+  });
+  document.querySelectorAll('[data-action="rename"]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const dept = departments.find(d => d.id === btn.dataset.dept);
+      const name = prompt('Rename category', dept.name);
+      if(name && name.trim()){ dept.name = name.trim(); await saveDepartments(); renderOverviewPage(); }
+    });
+  });
+  document.getElementById('addCatLink').addEventListener('click', addDepartment);
+  document.getElementById('addProjBtn').addEventListener('click', () => openModal(null));
+
+  const scroller = document.getElementById('timelineScroll');
+  if(todayIdx > 3) scroller.scrollLeft = (todayIdx - 2) * MONTH_W;
+}
+
+function renderCategoryPage(deptId){
+  const dept = departments.find(d => d.id === deptId);
+  if(!dept){ goHome(); return; }
+
+  document.getElementById('topControls').innerHTML = `
+    <input type="text" class="search" id="searchBox" placeholder="Search project or owner">
+    <button class="btn primary" id="addProjBtn">+ Add project</button>
+  `;
+
+  const headerHtml = `
+    <div class="back-link" id="backLink">&larr; All categories</div>
+    <div class="cat-page-header">
+      <div class="cat-page-title">
+        <span class="swatch" style="background:${dept.color}"></span>
+        <h2>${escapeHtml(dept.name)}</h2>
+      </div>
+      <button class="btn ghost" id="renameCatBtn">Rename category</button>
+    </div>
+  `;
+
+  document.getElementById('pageContent').innerHTML = headerHtml + legendHtml() +
+    `<div class="timeline-scroll" id="timelineScroll">
+      ${headerBlockHtml('Project')}
+      <div id="bodyWrap"></div>
+    </div>`;
+
+  document.getElementById('backLink').addEventListener('click', goHome);
+  document.getElementById('renameCatBtn').addEventListener('click', async () => {
+    const name = prompt('Rename category', dept.name);
+    if(name && name.trim()){ dept.name = name.trim(); await saveDepartments(); render(); }
+  });
+  document.getElementById('addProjBtn').addEventListener('click', () => openModal(null, deptId));
+  document.getElementById('searchBox').addEventListener('input', () => renderProjectRows(deptId));
+
+  renderProjectRows(deptId);
+
+  const scroller = document.getElementById('timelineScroll');
+  if(todayIdx > 3) scroller.scrollLeft = (todayIdx - 2) * MONTH_W;
+}
+
+function renderProjectRows(deptId){
+  const wrap = document.getElementById('bodyWrap');
+  const query = (document.getElementById('searchBox').value || '').toLowerCase();
+  const deptProjects = projects.filter(p => p.dept === deptId).filter(p =>
+    !query || p.name.toLowerCase().includes(query) || (p.owner||'').toLowerCase().includes(query)
+  );
+
+  if(deptProjects.length === 0){
+    wrap.innerHTML = `<div class="empty-msg">No projects yet here. Click "+ Add project" to start.</div>`;
+    return;
+  }
+
+  let html = '';
+  deptProjects.forEach(p => {
+    const s = STATUS[p.status] || STATUS.not_started;
+    const left = NAME_W + p.start * MONTH_W;
+    const width = (p.end - p.start + 1) * MONTH_W - 6;
+    html += `<div class="row" data-id="${p.id}">
+      <div class="name-cell">
+        <span class="pname">${escapeHtml(p.name)}</span>
+        <span class="psub">${escapeHtml(p.owner||'Unassigned')}</span>
+      </div>
+      <div class="cells">${'<div class="month-cell"></div>'.repeat(MONTH_COUNT)}</div>
+      <div class="bar" style="left:${left}px;width:${width}px;background:${s.bg};color:${s.text}">${escapeHtml(p.name)}</div>
+    </div>`;
+  });
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.row').forEach(row => {
+    row.addEventListener('click', () => openModal(row.dataset.id));
+  });
+}
+
+async function addDepartment(){
+  const n = departments.length + 1;
+  const newDept = {id: 'cat_' + Date.now(), name: 'New category ' + n, color:'#8A8778'};
+  departments.push(newDept);
+  await saveDepartments();
+  renderOverviewPage();
+}
+
+function openModal(id, presetDept){
+  editingId = id;
+  const overlay = document.getElementById('overlay');
+  const isEdit = !!id;
+  document.getElementById('modalTitle').textContent = isEdit ? 'Edit project' : 'Add project';
+  document.getElementById('deleteBtn').style.display = isEdit ? 'inline-flex' : 'none';
+  document.getElementById('f_dept').innerHTML = deptOptions(presetDept || (view.type==='category'?view.id:null) || (departments[0] && departments[0].id));
+  document.getElementById('f_status').innerHTML = statusOptions('not_started');
+  document.getElementById('f_start').innerHTML = monthOptions(todayIdx >= 0 ? todayIdx : 0);
+  document.getElementById('f_end').innerHTML = monthOptions(todayIdx >= 0 ? todayIdx : 0);
+
+  if(isEdit){
+    const p = projects.find(x => x.id === id);
+    document.getElementById('f_name').value = p.name;
+    document.getElementById('f_dept').value = p.dept;
+    document.getElementById('f_owner').value = p.owner || '';
+    document.getElementById('f_priority').value = p.priority || 'medium';
+    document.getElementById('f_status').value = p.status;
+    document.getElementById('f_start').value = p.start;
+    document.getElementById('f_end').value = p.end;
+    document.getElementById('f_notes').value = p.notes || '';
+  } else {
+    document.getElementById('f_name').value = '';
+    document.getElementById('f_owner').value = '';
+    document.getElementById('f_priority').value = 'medium';
+    document.getElementById('f_notes').value = '';
+  }
+  updateStatusPreview();
+  overlay.classList.remove('hidden');
+}
+
+function closeModal(){
+  document.getElementById('overlay').classList.add('hidden');
+  editingId = null;
+}
+
+function updateStatusPreview(){
+  const key = document.getElementById('f_status').value;
+  const s = STATUS[key];
+  const el = document.getElementById('statusPreview');
+  el.style.background = s.bg;
+  el.style.color = s.text;
+  el.textContent = s.label;
+}
+
+document.getElementById('f_status').addEventListener('change', updateStatusPreview);
+document.getElementById('cancelBtn').addEventListener('click', closeModal);
+document.getElementById('overlay').addEventListener('click', (e) => {
+  if(e.target.id === 'overlay') closeModal();
+});
+document.getElementById('brandHome').addEventListener('click', goHome);
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const name = document.getElementById('f_name').value.trim();
+  if(!name){ alert('Give the project a name first.'); return; }
+  let start = parseInt(document.getElementById('f_start').value, 10);
+  let end = parseInt(document.getElementById('f_end').value, 10);
+  if(end < start) end = start;
+
+  const data = {
+    name,
+    dept: document.getElementById('f_dept').value,
+    owner: document.getElementById('f_owner').value.trim(),
+    priority: document.getElementById('f_priority').value,
+    status: document.getElementById('f_status').value,
+    start, end,
+    notes: document.getElementById('f_notes').value
+  };
+
+  if(editingId){
+    const idx = projects.findIndex(p => p.id === editingId);
+    projects[idx] = {...projects[idx], ...data};
+  } else {
+    projects.push({id: 'proj_' + Date.now(), ...data});
+  }
+  await saveProjects();
+  closeModal();
+  render();
+});
+
+document.getElementById('deleteBtn').addEventListener('click', async () => {
+  if(!editingId) return;
+  if(!confirm('Delete this project?')) return;
+  projects = projects.filter(p => p.id !== editingId);
+  await saveProjects();
+  closeModal();
+  render();
+});
+
+async function init(){
+  await loadState();
+  render();
+}
+init();
+</script>
+</body>
+</html>
