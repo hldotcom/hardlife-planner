@@ -117,6 +117,9 @@
     border-right:1px solid var(--line);height:32px;
   }
   .month-cell.today{background:var(--brand);color:#fff;font-weight:600;}
+  .month-cell.clickable-month{cursor:pointer;}
+  .month-cell.clickable-month:hover{background:#EFEADC;}
+  .quarter-cell.add-quarter-cell:hover{background:var(--brand);color:#fff;}
 
   .row{
     display:flex;position:relative;min-width:max-content;
@@ -146,6 +149,8 @@
     font-size:0.72rem;font-weight:500;overflow:hidden;white-space:nowrap;
     pointer-events:none;
   }
+  .bar.prio-high{box-shadow:inset 0 0 0 2px #C0392B;}
+  .bar.prio-medium{box-shadow:inset 0 0 0 2px #C98A2E;}
   .empty-msg{padding:2.5rem;text-align:center;color:var(--muted);font-size:0.9rem;}
   .add-row-link{padding:12px;font-size:0.85rem;color:var(--ink-soft);cursor:pointer;min-width:max-content;}
   .add-row-link:hover{color:var(--ink);}
@@ -179,6 +184,63 @@
     display:inline-flex;align-items:center;gap:6px;font-size:0.78rem;
     margin-top:6px;padding:3px 8px;border-radius:6px;font-weight:500;
   }
+  .priority-row{display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap;}
+  .priority-pill{padding:6px 12px;border-radius:20px;font-size:0.78rem;font-weight:600;}
+  .view-toggle{display:flex;gap:0;margin-bottom:1.2rem;border:1px solid var(--line);border-radius:8px;width:fit-content;overflow:hidden;}
+  .toggle-btn{
+    border:none;background:var(--card);color:var(--ink-soft);padding:8px 16px;
+    font-size:0.85rem;cursor:pointer;font-family:'Inter',sans-serif;
+  }
+  .toggle-btn.active{background:var(--ink);color:var(--brand);}
+  .toggle-btn:not(.active):hover{background:#FAF9F5;}
+
+  .owner-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+  .owner-card{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px;cursor:pointer;transition:border-color 0.15s;
+  }
+  .owner-card:hover{border-color:var(--line-strong);}
+  .owner-name{font-weight:600;font-size:0.95rem;}
+  .owner-sub{font-size:0.76rem;color:var(--muted);margin-top:4px;}
+
+  .owner-item-list{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+  .owner-item-row{
+    display:flex;align-items:center;gap:12px;padding:12px 16px;
+    border-bottom:1px solid var(--line);cursor:pointer;
+  }
+  .owner-item-row:last-child{border-bottom:none;}
+  .owner-item-row:hover{background:#FBF8F1;}
+  .owner-item-row .swatch{width:10px;height:10px;border-radius:3px;flex:0 0 10px;}
+  .owner-item-main{flex:1;}
+  .owner-item-title{font-size:0.88rem;font-weight:500;}
+  .owner-item-title.done{color:var(--muted);text-decoration:line-through;}
+  .owner-item-sub{font-size:0.74rem;color:var(--muted);margin-top:2px;}
+  .owner-item-status{font-size:0.74rem;color:var(--muted);}
+
+  .task-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:0.84rem;}
+  .task-row:last-child{border-bottom:none;}
+  .task-row input[type="checkbox"]{accent-color:var(--brand);}
+  .task-row .t-title{flex:1;}
+  .task-row .t-title.done{color:var(--muted);text-decoration:line-through;}
+  .task-row .t-owner{color:var(--muted);font-size:0.76rem;}
+  .task-row .t-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:2px 4px;}
+  .task-row .t-del:hover{color:var(--danger);}
+  .add-task-row{display:flex;gap:6px;margin-top:8px;}
+  .add-task-row input{
+    flex:1;border:1px solid var(--line);border-radius:6px;padding:6px 8px;
+    font-size:0.82rem;font-family:'Inter',sans-serif;background:#FCFBF8;color:var(--ink);
+  }
+  .add-task-row button{padding:6px 12px;font-size:0.8rem;}
+
+  .month-item-row{
+    display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);
+    cursor:pointer;font-size:0.85rem;
+  }
+  .month-item-row:last-child{border-bottom:none;}
+  .month-item-row:hover{color:var(--brand-dark, #B96F0F);}
+  .month-item-row .swatch{width:10px;height:10px;border-radius:3px;flex:0 0 10px;}
+  .month-item-row .m-main{flex:1;}
+  .month-item-row .m-sub{font-size:0.72rem;color:var(--muted);}
 </style>
 </head>
 <body>
@@ -241,12 +303,31 @@
       <label>Notes</label>
       <textarea id="f_notes" placeholder="Any detail worth keeping"></textarea>
     </div>
+    <div class="field">
+      <label>Tasks</label>
+      <div id="taskList"></div>
+      <div class="add-task-row">
+        <input type="text" id="taskTitleInput" placeholder="Task name">
+        <input type="text" id="taskOwnerInput" placeholder="Owner">
+        <button class="btn" id="addTaskBtn" type="button">Add</button>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn" id="deleteBtn" style="display:none;color:var(--danger);border-color:var(--danger);">Delete</button>
       <div class="right">
         <button class="btn" id="cancelBtn">Cancel</button>
         <button class="btn primary" id="saveBtn">Save</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="monthOverlay">
+  <div class="modal">
+    <h3 id="monthModalTitle">Month</h3>
+    <div id="monthProjectList"></div>
+    <div class="modal-actions">
+      <div class="right"><button class="btn" id="monthCloseBtn">Close</button></div>
     </div>
   </div>
 </div>
@@ -263,18 +344,19 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
   const firebaseConfig = {
-    apiKey: "AIzaSyBWrcUUfbeK-tCAB2Ru3_n_HRmH7TQlK8Q",
-    authDomain: "hardlife-planner-344b0.firebaseapp.com",
-    projectId: "hardlife-planner-344b0",
-    storageBucket: "hardlife-planner-344b0.firebasestorage.app",
-    messagingSenderId: "633110554402",
-    appId: "1:633110554402:web:34c11885ba6dd35009677b"
+    apiKey: "PASTE_YOUR_API_KEY_HERE",
+    authDomain: "PASTE_YOUR_AUTH_DOMAIN_HERE",
+    projectId: "PASTE_YOUR_PROJECT_ID_HERE",
+    storageBucket: "PASTE_YOUR_STORAGE_BUCKET_HERE",
+    messagingSenderId: "PASTE_YOUR_SENDER_ID_HERE",
+    appId: "PASTE_YOUR_APP_ID_HERE"
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 </script>
 <script>
-const NAME_W = 240, MONTH_W = 64, MONTH_COUNT = 36;
+const NAME_W = 240, MONTH_W = 64;
+let MONTH_COUNT = 36;
 const START_YEAR = 2026, START_MONTH = 6; // July 2026, 0-indexed
 
 const STATUS = {
@@ -282,6 +364,11 @@ const STATUS = {
   in_progress: {label:'In progress', bg:'#EF9F27', text:'#412402'},
   completed:   {label:'Completed',   bg:'#97C459', text:'#173404'},
   cancelled:   {label:'Cancelled',   bg:'#8A6A63', text:'#FBEDEA'}
+};
+const PRIORITY = {
+  low:    {label:'Low',    bg:'#DDE3D1', text:'#38431F'},
+  medium: {label:'Medium', bg:'#F6DBAF', text:'#5A3A0A'},
+  high:   {label:'High',   bg:'#F1BEBE', text:'#5E1414'}
 };
 
 const DEFAULT_DEPTS = [
@@ -294,16 +381,21 @@ const DEFAULT_DEPTS = [
 ];
 
 let months = [];
-for(let i=0;i<MONTH_COUNT;i++){
-  const d = new Date(START_YEAR, START_MONTH + i, 1);
-  months.push({
-    label: d.toLocaleDateString('en-GB',{month:'short'}),
-    year: d.getFullYear(), month: d.getMonth(),
-    quarter: Math.floor(d.getMonth()/3) + 1
-  });
+let todayIdx = -1;
+function buildMonths(){
+  months = [];
+  for(let i=0;i<MONTH_COUNT;i++){
+    const d = new Date(START_YEAR, START_MONTH + i, 1);
+    months.push({
+      label: d.toLocaleDateString('en-GB',{month:'short'}),
+      year: d.getFullYear(), month: d.getMonth(),
+      quarter: Math.floor(d.getMonth()/3) + 1
+    });
+  }
+  const now = new Date();
+  todayIdx = months.findIndex(m => m.year === now.getFullYear() && m.month === now.getMonth());
 }
-const now = new Date();
-const todayIdx = months.findIndex(m => m.year === now.getFullYear() && m.month === now.getMonth());
+buildMonths();
 
 function quarterSegments(){
   const segs = [];
@@ -322,8 +414,15 @@ let departments = [];
 let projects = [];
 let editingId = null;
 let view = {type:'overview'};
+let overviewMode = 'category';
+let currentTasks = [];
 
 async function loadState(){
+  try{
+    const doc = await db.collection('hardlifePlanner').doc('settings').get();
+    MONTH_COUNT = doc.exists && doc.data().monthCount ? doc.data().monthCount : 36;
+  }catch(e){ MONTH_COUNT = 36; }
+  buildMonths();
   try{
     const doc = await db.collection('hardlifePlanner').doc('departments').get();
     departments = doc.exists ? JSON.parse(doc.data().json) : JSON.parse(JSON.stringify(DEFAULT_DEPTS));
@@ -335,6 +434,7 @@ async function loadState(){
   let migrated = false;
   projects.forEach(p => {
     if(p.status === 'blocked'){ p.status = 'cancelled'; migrated = true; }
+    if(!Array.isArray(p.tasks)){ p.tasks = []; migrated = true; }
   });
   if(migrated) await saveProjects();
 }
@@ -343,6 +443,15 @@ async function saveDepartments(){
 }
 async function saveProjects(){
   try{ await db.collection('hardlifePlanner').doc('projects').set({json: JSON.stringify(projects)}); }catch(e){ console.error('Save failed:', e); }
+}
+async function saveSettings(){
+  try{ await db.collection('hardlifePlanner').doc('settings').set({monthCount: MONTH_COUNT}); }catch(e){ console.error('Save failed:', e); }
+}
+async function addQuarter(){
+  MONTH_COUNT += 3;
+  buildMonths();
+  await saveSettings();
+  render();
 }
 
 function escapeHtml(str){
@@ -373,14 +482,24 @@ function headerBlockHtml(cornerLabel){
   segs.forEach(s => {
     qHtml += `<div class="quarter-cell" style="flex:0 0 ${s.count*MONTH_W}px;width:${s.count*MONTH_W}px;">${s.label}</div>`;
   });
+  qHtml += `<div class="quarter-cell add-quarter-cell" id="addQuarterCell" title="Add another quarter" style="flex:0 0 40px;width:40px;cursor:pointer;font-weight:700;">+</div>`;
   let mHtml = `<div class="corner-cell tall">${cornerLabel}</div>`;
   months.forEach((m,i) => {
-    mHtml += `<div class="month-cell ${i===todayIdx?'today':''}">${m.label}</div>`;
+    mHtml += `<div class="month-cell clickable-month ${i===todayIdx?'today':''}" data-idx="${i}">${m.label}</div>`;
   });
+  mHtml += `<div class="month-cell" style="width:40px;flex:0 0 40px;"></div>`;
   return `<div class="header-block">
     <div class="quarter-row">${qHtml}</div>
     <div class="month-row">${mHtml}</div>
   </div>`;
+}
+
+function attachHeaderHandlers(){
+  document.querySelectorAll('.clickable-month').forEach(cell => {
+    cell.addEventListener('click', () => openMonthModal(parseInt(cell.dataset.idx, 10)));
+  });
+  const addQ = document.getElementById('addQuarterCell');
+  if(addQ) addQ.addEventListener('click', addQuarter);
 }
 
 function goHome(){ view = {type:'overview'}; render(); }
@@ -389,15 +508,59 @@ function goCategory(id){ view = {type:'category', id}; render(); }
 function render(){
   document.getElementById('brandSub').textContent = view.type === 'overview'
     ? '36-month category overview'
+    : view.type === 'ownerDetail' ? 'Owner workload'
     : (departments.find(d=>d.id===view.id) || {}).name || '';
   if(view.type === 'overview') renderOverviewPage();
+  else if(view.type === 'ownerDetail') renderOwnerDetailPage(view.name);
   else renderCategoryPage(view.id);
+}
+
+function projectTaskItems(p, dept){
+  // Every project with an owner gets one "overall" item for that owner
+  // (their accountability for the project as a whole). Each task, if any,
+  // adds its own separate item for whichever owner is on that specific task.
+  const items = [];
+  const projOwner = (p.owner||'').trim();
+  if(projOwner){
+    items.push({
+      title: p.name + (p.tasks && p.tasks.length ? ' (overall)' : ''), owner: projOwner, done: p.status === 'completed',
+      projectId: p.id, projectName: p.name, deptId: p.dept, deptName: dept ? dept.name : '', deptColor: dept ? dept.color : '#999'
+    });
+  }
+  if(p.tasks && p.tasks.length > 0){
+    p.tasks.forEach(t => {
+      items.push({
+        title: t.title, owner: (t.owner||'').trim() || 'Unassigned', done: !!t.done,
+        projectId: p.id, projectName: p.name, deptId: p.dept, deptName: dept ? dept.name : '', deptColor: dept ? dept.color : '#999'
+      });
+    });
+  }
+  if(items.length === 0){
+    items.push({
+      title: p.name, owner: 'Unassigned', done: p.status === 'completed',
+      projectId: p.id, projectName: p.name, deptId: p.dept, deptName: dept ? dept.name : '', deptColor: dept ? dept.color : '#999'
+    });
+  }
+  return items;
+}
+
+function allWorkItems(){
+  let items = [];
+  projects.forEach(p => {
+    const dept = departments.find(d => d.id === p.dept);
+    items = items.concat(projectTaskItems(p, dept));
+  });
+  return items;
 }
 
 function renderOverviewPage(){
   const total = projects.length;
   const counts = {not_started:0, in_progress:0, completed:0, cancelled:0};
-  projects.forEach(p => { if(counts[p.status] !== undefined) counts[p.status]++; });
+  const prioCounts = {low:0, medium:0, high:0};
+  projects.forEach(p => {
+    if(counts[p.status] !== undefined) counts[p.status]++;
+    if(prioCounts[p.priority] !== undefined) prioCounts[p.priority]++;
+  });
 
   document.getElementById('topControls').innerHTML = `
     <button class="btn primary" id="addProjBtn">+ Add project</button>
@@ -410,7 +573,19 @@ function renderOverviewPage(){
     <div class="stat-card"><div class="num">${counts.in_progress}</div><div class="lbl">In progress</div></div>
     <div class="stat-card"><div class="num">${counts.completed}</div><div class="lbl">Completed</div></div>
     <div class="stat-card"><div class="num">${counts.not_started}</div><div class="lbl">Not started</div></div>
+  </div>
+  <div class="priority-row">
+    ${Object.entries(PRIORITY).map(([k,v]) => `<div class="priority-pill" style="background:${v.bg};color:${v.text}">${v.label}: ${prioCounts[k]}</div>`).join('')}
+  </div>
+  <div class="view-toggle">
+    <button class="toggle-btn ${overviewMode==='category'?'active':''}" id="modeCategory">By category</button>
+    <button class="toggle-btn ${overviewMode==='owner'?'active':''}" id="modeOwner">By owner</button>
   </div>`;
+
+  if(overviewMode === 'owner'){
+    renderOwnersOverview(statHtml);
+    return;
+  }
 
   const ROW_PAD = 10, LANE_H = 24, LANE_GAP = 4;
 
@@ -443,7 +618,7 @@ function renderOverviewPage(){
         const top = ROW_PAD + lane*(LANE_H+LANE_GAP);
         const left = NAME_W + p.start * MONTH_W;
         const width = (p.end - p.start + 1) * MONTH_W - 4;
-        return `<div class="bar" style="top:${top}px;height:${LANE_H}px;left:${left}px;width:${width}px;background:${s.bg};color:${s.text}">${escapeHtml(p.name)}</div>`;
+        return `<div class="bar prio-${p.priority||'low'}" style="top:${top}px;height:${LANE_H}px;left:${left}px;width:${width}px;background:${s.bg};color:${s.text}">${escapeHtml(p.name)}</div>`;
       }).join('');
     }
     bodyHtml += `<div class="row" data-dept="${dept.id}" style="height:${rowHeight}px;">
@@ -480,9 +655,83 @@ function renderOverviewPage(){
   });
   document.getElementById('addCatLink').addEventListener('click', addDepartment);
   document.getElementById('addProjBtn').addEventListener('click', () => openModal(null));
+  document.getElementById('modeCategory').addEventListener('click', () => { overviewMode='category'; renderOverviewPage(); });
+  document.getElementById('modeOwner').addEventListener('click', () => { overviewMode='owner'; renderOverviewPage(); });
+  attachHeaderHandlers();
 
   const scroller = document.getElementById('timelineScroll');
   if(todayIdx > 3) scroller.scrollLeft = (todayIdx - 2) * MONTH_W;
+}
+
+function renderOwnersOverview(statHtml){
+  const items = allWorkItems();
+  const byOwner = {};
+  items.forEach(it => {
+    if(!byOwner[it.owner]) byOwner[it.owner] = [];
+    byOwner[it.owner].push(it);
+  });
+  const owners = Object.keys(byOwner).sort((a,b) => byOwner[b].length - byOwner[a].length);
+
+  let listHtml = '';
+  if(owners.length === 0){
+    listHtml = `<div class="empty-msg">No owners assigned yet. Add an owner to a project or task to see them here.</div>`;
+  } else {
+    listHtml = `<div class="owner-list">` + owners.map(name => {
+      const list = byOwner[name];
+      const done = list.filter(i => i.done).length;
+      return `<div class="owner-card" data-owner="${escapeHtml(name)}">
+        <div class="owner-name">${escapeHtml(name)}</div>
+        <div class="owner-sub">${list.length} item${list.length===1?'':'s'} &middot; ${done} done</div>
+      </div>`;
+    }).join('') + `</div>`;
+  }
+
+  document.getElementById('pageContent').innerHTML = statHtml + listHtml;
+  document.getElementById('modeCategory').addEventListener('click', () => { overviewMode='category'; renderOverviewPage(); });
+  document.getElementById('modeOwner').addEventListener('click', () => { overviewMode='owner'; renderOverviewPage(); });
+  document.getElementById('addProjBtn').addEventListener('click', () => openModal(null));
+  document.querySelectorAll('.owner-card').forEach(card => {
+    card.addEventListener('click', () => goOwner(card.dataset.owner));
+  });
+}
+
+function goOwner(name){ view = {type:'ownerDetail', name}; render(); }
+
+function renderOwnerDetailPage(name){
+  const items = allWorkItems().filter(it => it.owner === name);
+  document.getElementById('topControls').innerHTML = `<button class="btn primary" id="addProjBtn">+ Add project</button>`;
+
+  const headerHtml = `
+    <div class="back-link" id="backLink">&larr; All owners</div>
+    <div class="cat-page-header"><div class="cat-page-title"><h2>${escapeHtml(name)}</h2></div></div>
+  `;
+
+  const done = items.filter(i => i.done).length;
+  const statHtml = `<div class="stat-row">
+    <div class="stat-card"><div class="num">${items.length}</div><div class="lbl">Total items</div></div>
+    <div class="stat-card"><div class="num">${done}</div><div class="lbl">Done</div></div>
+    <div class="stat-card"><div class="num">${items.length-done}</div><div class="lbl">Pending</div></div>
+  </div>`;
+
+  let listHtml = `<div class="owner-item-list">` + items.map(it => `
+    <div class="owner-item-row" data-project-id="${it.projectId}">
+      <span class="swatch" style="background:${it.deptColor}"></span>
+      <div class="owner-item-main">
+        <div class="owner-item-title ${it.done?'done':''}">${escapeHtml(it.title)}</div>
+        <div class="owner-item-sub">${escapeHtml(it.deptName)} &middot; ${escapeHtml(it.projectName)}</div>
+      </div>
+      <span class="owner-item-status">${it.done ? 'Done' : 'Pending'}</span>
+    </div>
+  `).join('') + `</div>`;
+
+  if(items.length === 0) listHtml = `<div class="empty-msg">Nothing assigned to ${escapeHtml(name)} yet.</div>`;
+
+  document.getElementById('pageContent').innerHTML = headerHtml + statHtml + listHtml;
+  document.getElementById('backLink').addEventListener('click', () => { overviewMode='owner'; goHome(); });
+  document.getElementById('addProjBtn').addEventListener('click', () => openModal(null));
+  document.querySelectorAll('.owner-item-row').forEach(row => {
+    row.addEventListener('click', () => openModal(row.dataset.projectId));
+  });
 }
 
 function renderCategoryPage(deptId){
@@ -520,6 +769,7 @@ function renderCategoryPage(deptId){
   document.getElementById('searchBox').addEventListener('input', () => renderProjectRows(deptId));
 
   renderProjectRows(deptId);
+  attachHeaderHandlers();
 
   const scroller = document.getElementById('timelineScroll');
   if(todayIdx > 3) scroller.scrollLeft = (todayIdx - 2) * MONTH_W;
@@ -542,13 +792,18 @@ function renderProjectRows(deptId){
     const s = STATUS[p.status] || STATUS.not_started;
     const left = NAME_W + p.start * MONTH_W;
     const width = (p.end - p.start + 1) * MONTH_W - 6;
+    const taskCount = p.tasks ? p.tasks.length : 0;
+    const doneCount = p.tasks ? p.tasks.filter(t => t.done).length : 0;
+    const subText = taskCount > 0
+      ? `${escapeHtml(p.owner||'Unassigned')} &middot; ${doneCount}/${taskCount} tasks`
+      : escapeHtml(p.owner||'Unassigned');
     html += `<div class="row" data-id="${p.id}">
       <div class="name-cell">
         <span class="pname">${escapeHtml(p.name)}</span>
-        <span class="psub">${escapeHtml(p.owner||'Unassigned')}</span>
+        <span class="psub">${subText}</span>
       </div>
       <div class="cells">${'<div class="month-cell"></div>'.repeat(MONTH_COUNT)}</div>
-      <div class="bar" style="left:${left}px;width:${width}px;background:${s.bg};color:${s.text}">${escapeHtml(p.name)}</div>
+      <div class="bar prio-${p.priority||'low'}" style="left:${left}px;width:${width}px;background:${s.bg};color:${s.text}">${escapeHtml(p.name)}</div>
     </div>`;
   });
   wrap.innerHTML = html;
@@ -586,15 +841,58 @@ function openModal(id, presetDept){
     document.getElementById('f_start').value = p.start;
     document.getElementById('f_end').value = p.end;
     document.getElementById('f_notes').value = p.notes || '';
+    currentTasks = p.tasks ? JSON.parse(JSON.stringify(p.tasks)) : [];
   } else {
     document.getElementById('f_name').value = '';
     document.getElementById('f_owner').value = '';
     document.getElementById('f_priority').value = 'medium';
     document.getElementById('f_notes').value = '';
+    currentTasks = [];
   }
+  renderTaskList();
   updateStatusPreview();
   overlay.classList.remove('hidden');
 }
+
+function renderTaskList(){
+  const el = document.getElementById('taskList');
+  if(currentTasks.length === 0){
+    el.innerHTML = `<div class="empty-note" style="font-size:0.8rem;color:var(--muted);">No tasks yet.</div>`;
+    return;
+  }
+  el.innerHTML = currentTasks.map((t, idx) => `
+    <div class="task-row">
+      <input type="checkbox" data-idx="${idx}" class="task-done" ${t.done?'checked':''}>
+      <span class="t-title ${t.done?'done':''}">${escapeHtml(t.title)}</span>
+      <span class="t-owner">${escapeHtml(t.owner||'Unassigned')}</span>
+      <button class="t-del" data-idx="${idx}" type="button">&times;</button>
+    </div>
+  `).join('');
+  el.querySelectorAll('.task-done').forEach(cb => {
+    cb.addEventListener('change', () => {
+      currentTasks[parseInt(cb.dataset.idx,10)].done = cb.checked;
+      renderTaskList();
+    });
+  });
+  el.querySelectorAll('.t-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentTasks.splice(parseInt(btn.dataset.idx,10), 1);
+      renderTaskList();
+    });
+  });
+}
+
+document.getElementById('addTaskBtn').addEventListener('click', () => {
+  const titleInput = document.getElementById('taskTitleInput');
+  const ownerInput = document.getElementById('taskOwnerInput');
+  const title = titleInput.value.trim();
+  if(!title) return;
+  currentTasks.push({title, owner: ownerInput.value.trim(), done:false});
+  titleInput.value = '';
+  ownerInput.value = '';
+  renderTaskList();
+  titleInput.focus();
+});
 
 function closeModal(){
   document.getElementById('overlay').classList.add('hidden');
@@ -631,7 +929,8 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     priority: document.getElementById('f_priority').value,
     status: document.getElementById('f_status').value,
     start, end,
-    notes: document.getElementById('f_notes').value
+    notes: document.getElementById('f_notes').value,
+    tasks: currentTasks
   };
 
   if(editingId){
@@ -653,6 +952,44 @@ document.getElementById('deleteBtn').addEventListener('click', async () => {
   closeModal();
   render();
 });
+
+document.getElementById('monthCloseBtn').addEventListener('click', () => {
+  document.getElementById('monthOverlay').classList.add('hidden');
+});
+document.getElementById('monthOverlay').addEventListener('click', (e) => {
+  if(e.target.id === 'monthOverlay') e.currentTarget.classList.add('hidden');
+});
+
+function openMonthModal(idx){
+  const m = months[idx];
+  if(!m) return;
+  const active = projects.filter(p => idx >= p.start && idx <= p.end);
+  document.getElementById('monthModalTitle').textContent = `${m.label} '${String(m.year).slice(2)} — ${active.length} project${active.length===1?'':'s'}`;
+  const list = document.getElementById('monthProjectList');
+  if(active.length === 0){
+    list.innerHTML = `<div class="empty-msg" style="padding:1.5rem 0;">Nothing running this month.</div>`;
+  } else {
+    list.innerHTML = active.map(p => {
+      const dept = departments.find(d => d.id === p.dept);
+      const s = STATUS[p.status] || STATUS.not_started;
+      return `<div class="month-item-row" data-id="${p.id}">
+        <span class="swatch" style="background:${dept?dept.color:'#999'}"></span>
+        <div class="m-main">
+          <div>${escapeHtml(p.name)}</div>
+          <div class="m-sub">${escapeHtml(dept?dept.name:'')} &middot; ${escapeHtml(p.owner||'Unassigned')}</div>
+        </div>
+        <span style="color:${s.bg};font-weight:600;font-size:0.78rem;">${s.label}</span>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('.month-item-row').forEach(row => {
+      row.addEventListener('click', () => {
+        document.getElementById('monthOverlay').classList.add('hidden');
+        openModal(row.dataset.id);
+      });
+    });
+  }
+  document.getElementById('monthOverlay').classList.remove('hidden');
+}
 
 async function init(){
   await loadState();
